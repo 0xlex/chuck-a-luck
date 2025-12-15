@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chuck-a-Luck Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes roll {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(90deg); }
+            50% { transform: rotate(180deg); }
+            75% { transform: rotate(270deg); }
+        }
+        .rolling {
+            animation: roll 0.5s ease-in-out 3;
+        }
+        .dice {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border: 2px solid #333;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-green-800 to-green-600 min-h-screen p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-5xl font-bold text-center mb-2 text-white">🎲 Chuck-a-Luck 🎲</h1>
+        <p class="text-center text-green-100 mb-2">Setze auf eine Zahl (1-6) und würfle mit drei Würfeln!</p>
+        <p class="text-center text-green-200 text-sm mb-8">📱 Tipp: Schüttle dein Smartphone zum Würfeln!</p>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Linke Spalte: Spiel -->
+            <div>
+                <!-- Guthaben -->
+                <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <span class="text-gray-600 text-lg">Guthaben:</span>
+                            <span id="balance" class="text-3xl font-bold text-green-600 ml-2">$100</span>
+                        </div>
+                        <button onclick="resetGame()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
+                            Neu starten
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Zahlenwahl -->
+                <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                    <h2 class="text-xl font-bold mb-4 text-gray-800">Wähle deine Zahl:</h2>
+                    <div class="grid grid-cols-6 gap-3">
+                        <button onclick="selectNumber(1)" id="btn1" class="number-btn bg-blue-500 hover:bg-blue-600 text-white text-2xl font-bold py-4 rounded-lg transition">1</button>
+                        <button onclick="selectNumber(2)" id="btn2" class="number-btn bg-blue-500 hover:bg-blue-600 text-white text-2xl font-bold py-4 rounded-lg transition">2</button>
+                        <button onclick="selectNumber(3)" id="btn3" class="number-btn bg-blue-500 hover:bg-blue-600 text-white text-2xl font-bold py-4 rounded-lg transition">3</button>
+                        <button onclick="selectNumber(4)" id="btn4" class="number-btn bg-blue-500 hover:bg-blue-600 text-white text-2xl font-bold py-4 rounded-lg transition">4</button>
+                        <button onclick="selectNumber(5)" id="btn5" class="number-btn bg-blue-500 hover:bg-blue-600 text-white text-2xl font-bold py-4 rounded-lg transition">5</button>
+                        <button onclick="selectNumber(6)" id="btn6" class="number-btn bg-blue-500 hover:bg-blue-600 text-white text-2xl font-bold py-4 rounded-lg transition">6</button>
+                    </div>
+                </div>
+
+                <!-- Einsatz -->
+                <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                    <h2 class="text-xl font-bold mb-4 text-gray-800">Einsatz:</h2>
+                    <div class="flex gap-3">
+                        <button onclick="setBet(1)" class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-lg font-bold">$1</button>
+                        <button onclick="setBet(5)" class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-lg font-bold">$5</button>
+                        <button onclick="setBet(10)" class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-lg font-bold">$10</button>
+                        <button onclick="setBet(25)" class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-lg font-bold">$25</button>
+                    </div>
+                    <div class="mt-4">
+                        <span class="text-gray-600 text-lg">Aktueller Einsatz:</span>
+                        <span id="currentBet" class="text-2xl font-bold text-yellow-600 ml-2">$1</span>
+                    </div>
+                </div>
+
+                <!-- Würfel -->
+                <div class="bg-white rounded-lg shadow-lg p-8 mb-6">
+                    <div class="flex justify-center gap-6 mb-6">
+                        <div id="dice1" class="dice">?</div>
+                        <div id="dice2" class="dice">?</div>
+                        <div id="dice3" class="dice">?</div>
+                    </div>
+                    <button id="rollBtn" onclick="rollDice()" class="w-full bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-4 rounded-lg transition disabled:bg-gray-400 disabled:cursor-not-allowed mb-3">
+                        🎲 WÜRFELN! 🎲
+                    </button>
+                    <button onclick="simulate1000000()" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-lg font-bold py-3 rounded-lg transition">
+                        📊 1.000.000 Spiele simulieren
+                    </button>
+                </div>
+
+                <!-- Ergebnis -->
+                <div id="result" class="bg-white rounded-lg shadow-lg p-6 hidden">
+                    <h2 class="text-2xl font-bold mb-2 text-gray-800">Ergebnis:</h2>
+                    <p id="resultText" class="text-xl"></p>
+                </div>
+            </div>
+
+            <!-- Rechte Spalte: Statistik -->
+            <div>
+                <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-800">📊 Statistik (1.000.000 Spiele)</h2>
+                    <div id="statsLoading" class="text-center text-gray-500 py-8">
+                        Noch keine Simulation durchgeführt
+                    </div>
+                    <div id="statsContent" class="hidden">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b-2 border-gray-300">
+                                    <th class="py-2 px-3 text-gray-700">Kategorie</th>
+                                    <th class="py-2 px-3 text-right text-gray-700">Anzahl</th>
+                                    <th class="py-2 px-3 text-right text-gray-700">%</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-700">
+                                <tr class="border-b border-gray-200">
+                                    <td class="py-2 px-3">Keine Treffer</td>
+                                    <td id="stat0" class="py-2 px-3 text-right font-mono">-</td>
+                                    <td id="statPct0" class="py-2 px-3 text-right text-sm text-gray-500">-</td>
+                                </tr>
+                                <tr class="border-b border-gray-200">
+                                    <td class="py-2 px-3">1× Treffer</td>
+                                    <td id="stat1" class="py-2 px-3 text-right font-mono">-</td>
+                                    <td id="statPct1" class="py-2 px-3 text-right text-sm text-gray-500">-</td>
+                                </tr>
+                                <tr class="border-b border-gray-200">
+                                    <td class="py-2 px-3">2× Treffer</td>
+                                    <td id="stat2" class="py-2 px-3 text-right font-mono">-</td>
+                                    <td id="statPct2" class="py-2 px-3 text-right text-sm text-gray-500">-</td>
+                                </tr>
+                                <tr class="border-b-2 border-gray-300">
+                                    <td class="py-2 px-3">3× Treffer (Jackpot)</td>
+                                    <td id="stat3" class="py-2 px-3 text-right font-mono">-</td>
+                                    <td id="statPct3" class="py-2 px-3 text-right text-sm text-gray-500">-</td>
+                                </tr>
+                                <tr class="border-b border-gray-200 bg-gray-50">
+                                    <td class="py-2 px-3 font-bold">Gesamt gespielt</td>
+                                    <td id="statTotal" class="py-2 px-3 text-right font-mono font-bold">-</td>
+                                    <td class="py-2 px-3 text-right text-sm">100%</td>
+                                </tr>
+                                <tr class="border-b border-gray-200">
+                                    <td class="py-2 px-3">Gesamteinsatz</td>
+                                    <td id="statTotalBet" class="py-2 px-3 text-right font-mono text-red-600">-</td>
+                                    <td class="py-2 px-3"></td>
+                                </tr>
+                                <tr class="border-b border-gray-200">
+                                    <td class="py-2 px-3">Gesamtgewinn</td>
+                                    <td id="statTotalWin" class="py-2 px-3 text-right font-mono text-green-600">-</td>
+                                    <td class="py-2 px-3"></td>
+                                </tr>
+                                <tr class="border-b-2 border-gray-300 bg-yellow-50">
+                                    <td class="py-2 px-3 font-bold">Nettoergebnis</td>
+                                    <td id="statNet" class="py-2 px-3 text-right font-mono font-bold">-</td>
+                                    <td class="py-2 px-3"></td>
+                                </tr>
+                                <tr class="bg-blue-50">
+                                    <td class="py-3 px-3 font-bold">Erwartungswert pro Spiel</td>
+                                    <td id="statExpected" class="py-3 px-3 text-right font-mono font-bold text-blue-700">-</td>
+                                    <td class="py-3 px-3"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Spielregeln -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-xl font-bold mb-3 text-gray-800">Spielregeln:</h2>
+                    <ul class="space-y-2 text-gray-700 text-sm">
+                        <li>• Wähle eine Zahl von 1 bis 6</li>
+                        <li>• Setze deinen Einsatz</li>
+                        <li>• Drei Würfel werden geworfen</li>
+                        <li><strong>Auszahlung (Gewinn = Auszahlung minus Einsatz):</strong>
+                            <ul class="ml-6 mt-1">
+                                <li>- 1× Treffer: Gewinn = 1× Einsatz</li>
+                                <li>- 2× Treffer: Gewinn = 2× Einsatz</li>
+                                <li>- 3× Treffer: Gewinn = 3× Einsatz</li>
+                                <li>- 0× Treffer: Einsatz verloren</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let balance = 100;
+        let selectedNumber = null;
+        let currentBet = 1;
+
+        // Shake-Detection
+        let lastX = 0, lastY = 0, lastZ = 0;
+        let lastUpdate = 0;
+        const shakeThreshold = 15;
+        let isRolling = false;
+
+        // Event-Listener für Bewegungssensoren
+        if (window.DeviceMotionEvent) {
+            window.addEventListener('devicemotion', function(event) {
+                const current = Date.now();
+                
+                if ((current - lastUpdate) > 100) {
+                    const diffTime = current - lastUpdate;
+                    lastUpdate = current;
+
+                    const x = event.accelerationIncludingGravity.x;
+                    const y = event.accelerationIncludingGravity.y;
+                    const z = event.accelerationIncludingGravity.z;
+
+                    const speed = Math.abs(x + y + z - lastX - lastY - lastZ) / diffTime * 10000;
+
+                    if (speed > shakeThreshold && !isRolling) {
+                        rollDice();
+                    }
+
+                    lastX = x;
+                    lastY = y;
+                    lastZ = z;
+                }
+            });
+        }
+
+        function selectNumber(num) {
+            selectedNumber = num;
+            for (let i = 1; i <= 6; i++) {
+                document.getElementById('btn' + i).classList.remove('bg-green-600', 'ring-4', 'ring-green-300');
+                document.getElementById('btn' + i).classList.add('bg-blue-500');
+            }
+            document.getElementById('btn' + num).classList.remove('bg-blue-500');
+            document.getElementById('btn' + num).classList.add('bg-green-600', 'ring-4', 'ring-green-300');
+        }
+
+        function setBet(amount) {
+            if (amount <= balance) {
+                currentBet = amount;
+                document.getElementById('currentBet').textContent = '$' + amount;
+            }
+        }
+
+        function rollDice() {
+            if (selectedNumber === null) {
+                alert('Bitte wähle zuerst eine Zahl!');
+                return;
+            }
+            if (currentBet > balance) {
+                alert('Nicht genug Guthaben!');
+                return;
+            }
+
+            if (isRolling) return;
+            isRolling = true;
+
+            balance -= currentBet;
+            updateBalance();
+
+            document.getElementById('rollBtn').disabled = true;
+
+            const dice1 = document.getElementById('dice1');
+            const dice2 = document.getElementById('dice2');
+            const dice3 = document.getElementById('dice3');
+            
+            dice1.classList.add('rolling');
+            dice2.classList.add('rolling');
+            dice3.classList.add('rolling');
+
+            setTimeout(() => {
+                const roll1 = Math.floor(Math.random() * 6) + 1;
+                const roll2 = Math.floor(Math.random() * 6) + 1;
+                const roll3 = Math.floor(Math.random() * 6) + 1;
+
+                dice1.textContent = roll1;
+                dice2.textContent = roll2;
+                dice3.textContent = roll3;
+
+                dice1.classList.remove('rolling');
+                dice2.classList.remove('rolling');
+                dice3.classList.remove('rolling');
+
+                let matches = 0;
+                if (roll1 === selectedNumber) matches++;
+                if (roll2 === selectedNumber) matches++;
+                if (roll3 === selectedNumber) matches++;
+
+                showResult(matches);
+                document.getElementById('rollBtn').disabled = false;
+                isRolling = false;
+            }, 1500);
+        }
+
+        function showResult(matches) {
+            const resultDiv = document.getElementById('result');
+            const resultText = document.getElementById('resultText');
+            resultDiv.classList.remove('hidden');
+
+            let winAmount = 0;
+            let message = '';
+
+            if (matches === 0) {
+                message = `❌ Deine Zahl ${selectedNumber} kam nicht vor. Einsatz verloren!`;
+                resultText.className = 'text-xl text-red-600 font-bold';
+            } else if (matches === 1) {
+                winAmount = currentBet * 2;
+                balance += winAmount;
+                message = `✅ Deine Zahl ${selectedNumber} kam 1× vor! Gewinn: $${winAmount}`;
+                resultText.className = 'text-xl text-green-600 font-bold';
+            } else if (matches === 2) {
+                winAmount = currentBet * 3;
+                balance += winAmount;
+                message = `🎉 Deine Zahl ${selectedNumber} kam 2× vor! Gewinn: $${winAmount}`;
+                resultText.className = 'text-xl text-green-600 font-bold';
+            } else if (matches === 3) {
+                winAmount = currentBet * 4;
+                balance += winAmount;
+                message = `🎊 JACKPOT! Deine Zahl ${selectedNumber} kam 3× vor! Gewinn: $${winAmount}`;
+                resultText.className = 'text-xl text-yellow-600 font-bold';
+            }
+
+            resultText.textContent = message;
+            updateBalance();
+
+            if (balance <= 0) {
+                setTimeout(() => {
+                    alert('Spiel vorbei! Kein Guthaben mehr.');
+                }, 500);
+            }
+        }
+
+        function updateBalance() {
+            document.getElementById('balance').textContent = '$' + balance;
+            if (currentBet > balance) {
+                currentBet = Math.min(1, balance);
+                document.getElementById('currentBet').textContent = '$' + currentBet;
+            }
+        }
+
+        function resetGame() {
+            balance = 100;
+            selectedNumber = null;
+            currentBet = 1;
+            updateBalance();
+            document.getElementById('currentBet').textContent = '$1';
+            document.getElementById('dice1').textContent = '?';
+            document.getElementById('dice2').textContent = '?';
+            document.getElementById('dice3').textContent = '?';
+            document.getElementById('result').classList.add('hidden');
+            for (let i = 1; i <= 6; i++) {
+                document.getElementById('btn' + i).classList.remove('bg-green-600', 'ring-4', 'ring-green-300');
+                document.getElementById('btn' + i).classList.add('bg-blue-500');
+            }
+        }
+
+        function simulate1000000() {
+            if (selectedNumber === null) {
+                alert('Bitte wähle zuerst eine Zahl!');
+                return;
+            }
+
+            const stats = [0, 0, 0, 0];
+            const betAmount = 1;
+            let totalBet = 0;
+            let totalWin = 0;
+            const totalGames = 1000000;
+
+            for (let i = 0; i < totalGames; i++) {
+                const roll1 = Math.floor(Math.random() * 6) + 1;
+                const roll2 = Math.floor(Math.random() * 6) + 1;
+                const roll3 = Math.floor(Math.random() * 6) + 1;
+
+                let matches = 0;
+                if (roll1 === selectedNumber) matches++;
+                if (roll2 === selectedNumber) matches++;
+                if (roll3 === selectedNumber) matches++;
+
+                stats[matches]++;
+                totalBet += betAmount;
+
+                if (matches === 1) totalWin += betAmount * 2;
+                else if (matches === 2) totalWin += betAmount * 3;
+                else if (matches === 3) totalWin += betAmount * 4;
+            }
+
+            const netResult = totalWin - totalBet;
+            const expectedValue = netResult / totalGames;
+
+            document.getElementById('statsLoading').classList.add('hidden');
+            document.getElementById('statsContent').classList.remove('hidden');
+
+            document.getElementById('stat0').textContent = stats[0].toLocaleString('de-DE');
+            document.getElementById('stat1').textContent = stats[1].toLocaleString('de-DE');
+            document.getElementById('stat2').textContent = stats[2].toLocaleString('de-DE');
+            document.getElementById('stat3').textContent = stats[3].toLocaleString('de-DE');
+
+            document.getElementById('statPct0').textContent = ((stats[0] / totalGames) * 100).toFixed(2) + '%';
+            document.getElementById('statPct1').textContent = ((stats[1] / totalGames) * 100).toFixed(2) + '%';
+            document.getElementById('statPct2').textContent = ((stats[2] / totalGames) * 100).toFixed(2) + '%';
+            document.getElementById('statPct3').textContent = ((stats[3] / totalGames) * 100).toFixed(2) + '%';
+
+            document.getElementById('statTotal').textContent = totalGames.toLocaleString('de-DE');
+            document.getElementById('statTotalBet').textContent = '-$' + totalBet.toLocaleString('de-DE');
+            document.getElementById('statTotalWin').textContent = '+$' + totalWin.toLocaleString('de-DE');
+            
+            const netEl = document.getElementById('statNet');
+            netEl.textContent = (netResult >= 0 ? '+' : '') + '$' + netResult.toLocaleString('de-DE');
+            netEl.className = 'py-2 px-3 text-right font-mono font-bold ' + (netResult >= 0 ? 'text-green-600' : 'text-red-600');
+
+            const expEl = document.getElementById('statExpected');
+            expEl.textContent = (expectedValue >= 0 ? '+' : '') + '$' + expectedValue.toFixed(5);
+        }
+    </script>
+</body>
+</html>
