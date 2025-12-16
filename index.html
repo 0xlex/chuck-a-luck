@@ -37,9 +37,7 @@
         <p class="text-center text-green-200 text-sm mb-8">📱 Tipp: Schüttle dein Smartphone zum Würfeln!</p>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Linke Spalte: Spiel -->
             <div>
-                <!-- Guthaben -->
                 <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
                     <div class="flex justify-between items-center">
                         <div>
@@ -52,7 +50,6 @@
                     </div>
                 </div>
 
-                <!-- Zahlenwahl -->
                 <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
                     <h2 class="text-xl font-bold mb-4 text-gray-800">Wähle deine Zahl:</h2>
                     <div class="grid grid-cols-6 gap-3">
@@ -65,7 +62,6 @@
                     </div>
                 </div>
 
-                <!-- Einsatz -->
                 <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
                     <h2 class="text-xl font-bold mb-4 text-gray-800">Einsatz:</h2>
                     <div class="flex gap-3">
@@ -80,7 +76,6 @@
                     </div>
                 </div>
 
-                <!-- Würfel -->
                 <div class="bg-white rounded-lg shadow-lg p-8 mb-6">
                     <div class="flex justify-center gap-6 mb-6">
                         <div id="dice1" class="dice">?</div>
@@ -92,10 +87,10 @@
                     </button>
                     <div class="grid grid-cols-3 gap-2">
                         <button onclick="simulateGames(100)" class="bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold py-2 rounded-lg transition">
-                            📊 100 Spiele
+                            📊 100
                         </button>
                         <button onclick="simulateGames(1000)" class="bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold py-2 rounded-lg transition">
-                            📊 1.000 Spiele
+                            📊 1.000
                         </button>
                         <button onclick="simulateGames(1000000)" class="bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold py-2 rounded-lg transition">
                             📊 1 Mio
@@ -103,14 +98,12 @@
                     </div>
                 </div>
 
-                <!-- Ergebnis -->
                 <div id="result" class="bg-white rounded-lg shadow-lg p-6 hidden">
                     <h2 class="text-2xl font-bold mb-2 text-gray-800">Ergebnis:</h2>
                     <p id="resultText" class="text-xl"></p>
                 </div>
             </div>
 
-            <!-- Rechte Spalte: Statistik -->
             <div>
                 <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
                     <h2 class="text-2xl font-bold mb-4 text-gray-800">📊 Statistik</h2>
@@ -143,12 +136,12 @@
                                     <td id="statPct2" class="py-2 px-3 text-right text-sm text-gray-500">-</td>
                                 </tr>
                                 <tr class="border-b-2 border-gray-300">
-                                    <td class="py-2 px-3">3× Treffer (Jackpot)</td>
+                                    <td class="py-2 px-3">3× Treffer</td>
                                     <td id="stat3" class="py-2 px-3 text-right font-mono">-</td>
                                     <td id="statPct3" class="py-2 px-3 text-right text-sm text-gray-500">-</td>
                                 </tr>
                                 <tr class="border-b border-gray-200 bg-gray-50">
-                                    <td class="py-2 px-3 font-bold">Gesamt gespielt</td>
+                                    <td class="py-2 px-3 font-bold">Gesamt</td>
                                     <td id="statTotal" class="py-2 px-3 text-right font-mono font-bold">-</td>
                                     <td class="py-2 px-3 text-right text-sm">100%</td>
                                 </tr>
@@ -168,7 +161,7 @@
                                     <td class="py-2 px-3"></td>
                                 </tr>
                                 <tr class="bg-blue-50">
-                                    <td class="py-3 px-3 font-bold">Erwartungswert pro Spiel</td>
+                                    <td class="py-3 px-3 font-bold">Erwartungswert</td>
                                     <td id="statExpected" class="py-3 px-3 text-right font-mono font-bold text-blue-700">-</td>
                                     <td class="py-3 px-3"></td>
                                 </tr>
@@ -177,14 +170,13 @@
                     </div>
                 </div>
 
-                <!-- Spielregeln -->
                 <div class="bg-white rounded-lg shadow-lg p-6">
                     <h2 class="text-xl font-bold mb-3 text-gray-800">Spielregeln:</h2>
                     <ul class="space-y-2 text-gray-700 text-sm">
                         <li>• Wähle eine Zahl von 1 bis 6</li>
                         <li>• Setze deinen Einsatz</li>
                         <li>• Drei Würfel werden geworfen</li>
-                        <li><strong>Auszahlung (Gewinn = Auszahlung minus Einsatz):</strong>
+                        <li><strong>Auszahlung:</strong>
                             <ul class="ml-6 mt-1">
                                 <li>- 1× Treffer: Gewinn = 1× Einsatz</li>
                                 <li>- 2× Treffer: Gewinn = 2× Einsatz</li>
@@ -202,38 +194,59 @@
         let balance = 100;
         let selectedNumber = null;
         let currentBet = 1;
-
-        // Shake-Detection
-        let lastX = 0, lastY = 0, lastZ = 0;
-        let lastUpdate = 0;
-        const shakeThreshold = 15;
         let isRolling = false;
 
-        // Event-Listener für Bewegungssensoren
-        if (window.DeviceMotionEvent) {
-            window.addEventListener('devicemotion', function(event) {
-                const current = Date.now();
-                
-                if ((current - lastUpdate) > 100) {
-                    const diffTime = current - lastUpdate;
-                    lastUpdate = current;
+        let lastX = 0, lastY = 0, lastZ = 0;
+        let lastUpdate = 0;
+        const shakeThreshold = 800;
 
-                    const x = event.accelerationIncludingGravity.x;
-                    const y = event.accelerationIncludingGravity.y;
-                    const z = event.accelerationIncludingGravity.z;
-
-                    const speed = Math.abs(x + y + z - lastX - lastY - lastZ) / diffTime * 10000;
-
-                    if (speed > shakeThreshold && !isRolling) {
-                        rollDice();
-                    }
-
-                    lastX = x;
-                    lastY = y;
-                    lastZ = z;
-                }
-            });
+        function requestMotionPermission() {
+            if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+                DeviceMotionEvent.requestPermission()
+                    .then(response => {
+                        if (response === 'granted') {
+                            initShakeDetection();
+                        }
+                    })
+                    .catch(console.error);
+            } else {
+                initShakeDetection();
+            }
         }
+
+        function initShakeDetection() {
+            if (window.DeviceMotionEvent) {
+                window.addEventListener('devicemotion', function(event) {
+                    if (!event.accelerationIncludingGravity) return;
+                    
+                    const current = Date.now();
+                    
+                    if ((current - lastUpdate) > 100) {
+                        const diffTime = current - lastUpdate;
+                        lastUpdate = current;
+
+                        const x = event.accelerationIncludingGravity.x || 0;
+                        const y = event.accelerationIncludingGravity.y || 0;
+                        const z = event.accelerationIncludingGravity.z || 0;
+
+                        const speed = Math.abs(x + y + z - lastX - lastY - lastZ) / diffTime * 10000;
+
+                        if (speed > shakeThreshold && !isRolling) {
+                            console.log('Shake detected! Speed:', speed);
+                            rollDice();
+                        }
+
+                        lastX = x;
+                        lastY = y;
+                        lastZ = z;
+                    }
+                }, true);
+            }
+        }
+
+        document.addEventListener('click', function() {
+            requestMotionPermission();
+        }, { once: true });
 
         function selectNumber(num) {
             selectedNumber = num;
@@ -311,22 +324,22 @@
             let message = '';
 
             if (matches === 0) {
-                message = `❌ Deine Zahl ${selectedNumber} kam nicht vor. Einsatz verloren!`;
+                message = 'Deine Zahl ' + selectedNumber + ' kam nicht vor. Einsatz verloren!';
                 resultText.className = 'text-xl text-red-600 font-bold';
             } else if (matches === 1) {
                 winAmount = currentBet * 2;
                 balance += winAmount;
-                message = `✅ Deine Zahl ${selectedNumber} kam 1× vor! Gewinn: $${winAmount}`;
+                message = 'Deine Zahl ' + selectedNumber + ' kam 1× vor! Gewinn: $' + winAmount;
                 resultText.className = 'text-xl text-green-600 font-bold';
             } else if (matches === 2) {
                 winAmount = currentBet * 3;
                 balance += winAmount;
-                message = `🎉 Deine Zahl ${selectedNumber} kam 2× vor! Gewinn: $${winAmount}`;
+                message = 'Deine Zahl ' + selectedNumber + ' kam 2× vor! Gewinn: $' + winAmount;
                 resultText.className = 'text-xl text-green-600 font-bold';
             } else if (matches === 3) {
                 winAmount = currentBet * 4;
                 balance += winAmount;
-                message = `🎊 JACKPOT! Deine Zahl ${selectedNumber} kam 3× vor! Gewinn: $${winAmount}`;
+                message = 'JACKPOT! Deine Zahl ' + selectedNumber + ' kam 3× vor! Gewinn: $' + winAmount;
                 resultText.className = 'text-xl text-yellow-600 font-bold';
             }
 
@@ -364,27 +377,25 @@
             }
         }
 
-        function simulate1000000() {
-            if (selectedNumber === null) {
-                alert('Bitte wähle zuerst eine Zahl!');
-                return;
-            }
-
+        function simulateGames(totalGames) {
+            console.log('Simulation gestartet mit ' + totalGames + ' Spielen');
+            
             const stats = [0, 0, 0, 0];
             const betAmount = 1;
             let totalBet = 0;
             let totalWin = 0;
-            const totalGames = 1000000;
 
             for (let i = 0; i < totalGames; i++) {
+                const simNumber = Math.floor(Math.random() * 6) + 1;
+                
                 const roll1 = Math.floor(Math.random() * 6) + 1;
                 const roll2 = Math.floor(Math.random() * 6) + 1;
                 const roll3 = Math.floor(Math.random() * 6) + 1;
 
                 let matches = 0;
-                if (roll1 === selectedNumber) matches++;
-                if (roll2 === selectedNumber) matches++;
-                if (roll3 === selectedNumber) matches++;
+                if (roll1 === simNumber) matches++;
+                if (roll2 === simNumber) matches++;
+                if (roll3 === simNumber) matches++;
 
                 stats[matches]++;
                 totalBet += betAmount;
@@ -393,6 +404,8 @@
                 else if (matches === 2) totalWin += betAmount * 3;
                 else if (matches === 3) totalWin += betAmount * 4;
             }
+
+            console.log('Simulation beendet. Stats:', stats);
 
             const netResult = totalWin - totalBet;
             const expectedValue = netResult / totalGames;
@@ -420,6 +433,8 @@
 
             const expEl = document.getElementById('statExpected');
             expEl.textContent = (expectedValue >= 0 ? '+' : '') + '$' + expectedValue.toFixed(5);
+            
+            console.log('Statistik aktualisiert');
         }
     </script>
 </body>
