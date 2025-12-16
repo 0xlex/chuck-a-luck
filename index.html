@@ -90,9 +90,17 @@
                     <button id="rollBtn" onclick="rollDice()" class="w-full bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-4 rounded-lg transition disabled:bg-gray-400 disabled:cursor-not-allowed mb-3">
                         🎲 WÜRFELN! 🎲
                     </button>
-                    <button onclick="simulate1000000()" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-lg font-bold py-3 rounded-lg transition">
-                        📊 1.000.000 Spiele simulieren
-                    </button>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="simulateGames(100)" class="bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold py-2 rounded-lg transition">
+                            📊 100 Spiele
+                        </button>
+                        <button onclick="simulateGames(1000)" class="bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold py-2 rounded-lg transition">
+                            📊 1.000 Spiele
+                        </button>
+                        <button onclick="simulateGames(1000000)" class="bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold py-2 rounded-lg transition">
+                            📊 1 Mio
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Ergebnis -->
@@ -105,7 +113,7 @@
             <!-- Rechte Spalte: Statistik -->
             <div>
                 <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-                    <h2 class="text-2xl font-bold mb-4 text-gray-800">📊 Statistik (1.000.000 Spiele)</h2>
+                    <h2 class="text-2xl font-bold mb-4 text-gray-800">📊 Statistik</h2>
                     <div id="statsLoading" class="text-center text-gray-500 py-8">
                         Noch keine Simulation durchgeführt
                     </div>
